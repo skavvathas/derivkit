@@ -13,11 +13,21 @@ d = delta(S=100, K=100, T=1, r=0.05, sigma=0.2, type='call')              # 0.63
 
 ## Installation
 
+Install from PyPI:
+
 ```bash
 pip install derivkit
 ```
 
-Requires Python 3.8+ and NumPy.
+Or install locally from source (editable mode):
+
+```bash
+git clone https://github.com/spiroskavvathas/derivkit.git
+cd derivkit
+pip install -e .
+```
+
+Requires Python 3.9+ and NumPy.
 
 ---
 
