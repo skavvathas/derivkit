@@ -1,6 +1,15 @@
 import numpy as np
 
-
+# Binomial tree model for pricing options
+# @param S: current spot price
+# @param K: strike price
+# @param T: time to expiration
+# @param r: risk-free interest rate
+# @param sigma: volatility
+# @param n: number of steps
+# @param option_type: 'call' or 'put'
+# @param style: 'european' or 'american'
+# @return: price
 def binomial_tree(S, K, T, r, sigma, n, option_type='call', style='european'):
     dt = T / n
     u = np.exp(sigma * np.sqrt(dt))
