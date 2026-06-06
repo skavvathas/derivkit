@@ -1,4 +1,5 @@
 import numpy as np
+from .utils import validate_input_parameters
 
 # Binomial tree model for pricing options
 # @param S: current spot price
@@ -11,6 +12,9 @@ import numpy as np
 # @param style: 'european' or 'american'
 # @return: price
 def binomial_tree(S, K, T, r, sigma, n, option_type='call', style='european'):
+    # Validate input parameters
+    validate_input_parameters(S, K, T, r, sigma, option_type)
+
     dt = T / n
     u = np.exp(sigma * np.sqrt(dt))
     d = 1 / u
@@ -24,8 +28,6 @@ def binomial_tree(S, K, T, r, sigma, n, option_type='call', style='european'):
         values = np.maximum(ST - K, 0)
     elif option_type == 'put':
         values = np.maximum(K - ST, 0)
-    else:
-        raise ValueError("option_type must be 'call' or 'put'")
 
     for i in range(n - 1, -1, -1):
         values = discount * (p * values[:-1] + (1 - p) * values[1:])

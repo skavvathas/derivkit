@@ -5,6 +5,10 @@ from utils import ppf
 # @param prices: numpy array of prices
 # @return: numpy array of drawdowns
 def max_drawdown(prices):
+    # Validate input parameters
+    validate_input_parameters_risk_metrics(prices)
+
+    # Convert prices to numpy array
     prices = np.asarray(prices, dtype=float)
     peak = np.maximum.accumulate(prices)
     drawdowns = (prices - peak) / peak
@@ -16,11 +20,17 @@ def max_drawdown(prices):
 # @param rf: risk-free rate
 # @return: Sharpe ratio
 def sharpe_ratio(returns, rf=0.0, periods=252):
-    std = returns.std()
-    risk_free_rate = rf
-    annualized_returns = returns.mean() * periods
-    annualized_std = std * np.sqrt(periods)
-    return (annualized_returns - risk_free_rate) / annualized_std
+    # Validate input parameters
+    validate_input_parameters_risk_metrics(returns)
+
+    if periods <= 0:
+        raise ValueError("periods must be greater than 0")
+    if rf < 0:
+        raise ValueError("rf must be greater than 0")
+
+    # Convert returns to numpy array
+    return (returns.mean() * periods - rf) / (returns.std() * np.sqrt(periods))
+
 
 # Sortino ratio of a returns series
 # @param returns: numpy array of returns
@@ -28,6 +38,15 @@ def sharpe_ratio(returns, rf=0.0, periods=252):
 # @param periods: number of periods in a year
 # @return: Sortino ratio
 def sortino_ratio(returns, rf=0.0, periods=252):
+    # Validate input parameters
+    validate_input_parameters_risk_metrics(returns)
+
+    if periods <= 0:
+        raise ValueError("periods must be greater than 0")
+    if rf < 0:
+        raise ValueError("rf must be greater than 0")
+
+    # Convert returns to numpy array
     downside_std = returns[returns < 0].std()
     risk_free_rate = rf
     annualized_returns = returns.mean() * periods
@@ -39,6 +58,13 @@ def sortino_ratio(returns, rf=0.0, periods=252):
 # @param window: window size for the realized volatility
 # @return: numpy array of realized volatility
 def realized_volatility(prices, window=20):
+    # Validate input parameters
+    validate_input_parameters_risk_metrics(prices)
+
+    if window <= 0:
+        raise ValueError("window must be greater than 0")
+
+    # Convert prices to numpy array
     prices = np.asarray(prices, dtype=float)
     log_returns = np.log(prices[1:] / prices[:-1])
     if len(log_returns) < window:
