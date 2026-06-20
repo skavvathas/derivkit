@@ -1,5 +1,8 @@
 import numpy as np
-from .utils import ppf
+from scipy.optimize import brentq
+from .utils import ppf, validate_input_parameters, validate_input_parameters_risk_metrics, validate_input_parameters_returns
+from .black_scholes import black_scholes
+from .greeks import vega
 
 # Max Drawdown of a price series
 # @param prices: numpy array of prices
@@ -16,13 +19,13 @@ def max_drawdown(prices):
 
 
 # Sharpe ratio of a returns series
-# Sharpe ratio is a measure of the risk-adjusted return of an investment. It is calculated by dividing the excess return of the investment by the standard deviation of the investment.s
+# Sharpe ratio is a measure of the risk-adjusted return of an investment. It is calculated by dividing the excess return of the investment by the standard deviation of the investment
 # @param returns: numpy array of returns
 # @param rf: risk-free rate
 # @return: Sharpe ratio
 def sharpe_ratio(returns, rf=0.0, periods=252):
     # Validate input parameters
-    validate_input_parameters_risk_metrics(returns)
+    validate_input_parameters_returns(returns)
 
     if periods <= 0:
         raise ValueError("periods must be greater than 0")
@@ -41,7 +44,7 @@ def sharpe_ratio(returns, rf=0.0, periods=252):
 # @return: Sortino ratio
 def sortino_ratio(returns, rf=0.0, periods=252):
     # Validate input parameters
-    validate_input_parameters_risk_metrics(returns)
+    validate_input_parameters_returns(returns)
 
     if periods <= 0:
         raise ValueError("periods must be greater than 0")
@@ -88,8 +91,10 @@ def realized_volatility(prices, window=20):
 # @param tolerance: tolerance for the convergence
 # @return: implied volatility
 def implied_volatility_raphson_newton_method(price, S, K, T, r, option_type='call', max_iterations=100, tolerance=1e-6):
-    # Validate input parameters
-    validate_input_parameters_risk_metrics(price, S, K, T, r, option_type)
+    # Validate input parameters (sigma is the unknown, so a valid placeholder is used)
+    validate_input_parameters(S, K, T, r, 1.0, option_type)
+    if price <= 0:
+        raise ValueError("price must be greater than 0")
 
     # Initial guess for volatility
     sigma = 0.5
@@ -97,7 +102,7 @@ def implied_volatility_raphson_newton_method(price, S, K, T, r, option_type='cal
     # Loop for calculation of implied volatility
     for i in range(max_iterations):
         price_hat = black_scholes(S, K, T, r, sigma, option_type)
-        vega_hat = vega(S, K, T, r, sigma, option_type)
+        vega_hat = vega(S, K, T, r, sigma)
         difference = price_hat - price
         if vega_hat == 0:
             raise ValueError("Vega is zero, cannot solve for volatility")
@@ -105,9 +110,66 @@ def implied_volatility_raphson_newton_method(price, S, K, T, r, option_type='cal
             return sigma
         # Newton Step
         sigma = sigma - difference / vega_hat
-            sigma = max(1e-6, min(sigma, 10.0))  # clamp
+        sigma = max(1e-6, min(sigma, 10.0))  # clamp
 
-    return max
+    return sigma
+
+# Implied volatility using the Bisection method
+# @param S: spot price of the underlying
+# @param K: strike price
+# @param r: risk-free rate
+# @param T: time to expiration
+# @param market_price: observed market price of the option
+# @param option_type: type of the option ('call' or 'put')
+# @param tol: tolerance for the convergence
+# @param max_iterations: maximum number of iterations
+# @return: implied volatility
+def implied_volatility_bisection(S, K, r, T, market_price, option_type='call', tol=1e-7, max_iterations=100):
+    # Validate input parameters (sigma is the unknown, so a valid placeholder is used)
+    validate_input_parameters(S, K, T, r, 1.0, option_type)
+    if market_price <= 0:
+        raise ValueError("market_price must be greater than 0")
+
+    # Bracket the volatility search between a small lower bound and a large upper bound
+    low, high = 1e-6, 10.0
+
+    # Bisection loop: repeatedly halve the interval containing the solution
+    for _ in range(max_iterations):
+        mid = 0.5 * (low + high)
+        difference = black_scholes(S, K, T, r, mid, option_type) - market_price
+        if abs(difference) < tol:
+            return mid
+        # The Black-Scholes price is increasing in volatility, so narrow the bracket accordingly
+        if difference > 0:
+            high = mid
+        else:
+            low = mid
+
+    # Return the midpoint of the final interval as the best estimate
+    return 0.5 * (low + high)
+
+# Implied volatility using Brent's method
+# @param S: spot price of the underlying
+# @param K: strike price
+# @param r: risk-free rate
+# @param T: time to expiration
+# @param market_price: observed market price of the option
+# @param option_type: type of the option ('call' or 'put')
+# @param tol: tolerance for the convergence
+# @return: implied volatility
+def implied_volatility_brent(S, K, r, T, market_price, option_type='call', tol=1e-7):
+    # Validate input parameters (sigma is the unknown, so a valid placeholder is used)
+    validate_input_parameters(S, K, T, r, 1.0, option_type)
+    if market_price <= 0:
+        raise ValueError("market_price must be greater than 0")
+
+    # Objective: the difference between the model price and the market price as a function of volatility
+    def objective(sigma):
+        return black_scholes(S, K, T, r, sigma, option_type) - market_price
+
+    # Brent's method finds the root of the objective within the volatility bracket
+    return brentq(objective, 1e-6, 10.0, xtol=tol)
+
 
 
 # Parametric Value at Risk
@@ -115,7 +177,10 @@ def implied_volatility_raphson_newton_method(price, S, K, T, r, option_type='cal
 # @param confidence: confidence level for the VaR
 # @return: numpy array of VaRs
 def parametric_var(returns, confidence=0.95):
-    mu = returns.mean() 
+    # Validate input parameters
+    validate_input_parameters_returns(returns)
+
+    mu = returns.mean()
     sigma = returns.std()
     z = ppf(confidence)
     var_pct = -(mu - z * sigma)

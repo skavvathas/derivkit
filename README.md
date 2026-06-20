@@ -50,6 +50,16 @@ Requires Python 3.9+, NumPy, and SciPy.
 | `theta(S, K, T, r, sigma, option_type)` | Sensitivity to time decay |
 | `rho(S, K, T, r, sigma, option_type)` | Sensitivity to interest rate |
 
+### Second-order Greeks
+
+| Function | Description |
+|---|---|
+| `vanna(S, K, T, r, sigma)` | ∂Vega/∂S = ∂Delta/∂σ |
+| `vomma(S, K, T, r, sigma)` | ∂Vega/∂σ (a.k.a. Volga) |
+| `charm(S, K, T, r, sigma)` | ∂Delta/∂t (delta decay over time) |
+| `veta(S, K, T, r, sigma)` | ∂Vega/∂t (vega decay over time) |
+| `vera(S, K, T, r, sigma)` | ∂Vega/∂r = ∂Rho/∂σ (a.k.a. Rhova) |
+
 ### Volatility
 
 | Function | Description |

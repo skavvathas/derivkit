@@ -5,6 +5,7 @@ from scipy.stats import norm
 # @param x: value
 # @return: True if input parameters are valid, False otherwise
 def validate_input_parameters_scalar(x):
+    x = np.asarray(x)
     if np.any(np.isnan(x)):
         raise ValueError("x must not contain NaN")
     if np.any(np.isinf(x)):
@@ -77,3 +78,17 @@ def validate_input_parameters_risk_metrics(prices):
         raise ValueError("prices must not contain NaN")
     if np.any(np.isinf(prices)):
         raise ValueError("prices must not contain infinity")
+
+
+# Validate input parameters for a returns series (returns may be negative)
+def validate_input_parameters_returns(returns):
+    if not isinstance(returns, np.ndarray):
+        raise ValueError("returns must be a numpy array")
+    if returns.ndim != 1:
+        raise ValueError("returns must be a 1D numpy array")
+    if returns.size == 0:
+        raise ValueError("returns must not be empty")
+    if np.any(np.isnan(returns)):
+        raise ValueError("returns must not contain NaN")
+    if np.any(np.isinf(returns)):
+        raise ValueError("returns must not contain infinity")
