@@ -1,13 +1,24 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "derivkit"
 version = "0.1.0"
 description = "A lightweight Python library for quantitative finance — options pricing, Greeks, volatility tools, and risk metrics."
+readme = "README.md"
 requires-python = ">=3.9"
+license = { file = "LICENCE" }
+authors = [
+    { name = "Spyridon Kavvathas", email = "skabbathas@gmail.com" },
+]
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
 ]
+
+[project.urls]
+Homepage = "https://github.com/skavvathas/derivkit"
+
+[tool.setuptools.packages.find]
+include = ["derivkit*"]

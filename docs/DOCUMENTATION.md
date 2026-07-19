@@ -42,13 +42,13 @@ formula it implements, its parameters, and a short usage example.
 ## Installation
 
 ```bash
-pip install derivkit
+pip install git+https://github.com/skavvathas/derivkit.git
 ```
 
 Or from source (editable):
 
 ```bash
-git clone https://github.com/spiroskavvathas/derivkit.git
+git clone https://github.com/skavvathas/derivkit.git
 cd derivkit
 pip install -e .
 ```

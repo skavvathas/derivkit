@@ -13,16 +13,16 @@ d = delta(S=100, K=100, T=1, r=0.05, sigma=0.2, option_type='call')             
 
 ## Installation
 
-Install from PyPI:
+Install directly from GitHub:
 
 ```bash
-pip install derivkit
+pip install git+https://github.com/skavvathas/derivkit.git
 ```
 
-Or install locally from source (editable mode):
+Or clone and install locally in editable mode:
 
 ```bash
-git clone https://github.com/spiroskavvathas/derivkit.git
+git clone https://github.com/skavvathas/derivkit.git
 cd derivkit
 pip install -e .
 ```
