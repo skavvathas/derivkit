@@ -13,6 +13,13 @@ d = delta(S=100, K=100, T=1, r=0.05, sigma=0.2, option_type='call')             
 
 ## Installation
 
+It's recommended to install into a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+```
+
 Install directly from GitHub:
 
 ```bash
